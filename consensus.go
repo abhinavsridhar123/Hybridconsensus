@@ -23,6 +23,10 @@ import (
 	"math/big"
 	"runtime"
 	"time"
+	"bufio"
+	"os"
+	"strconv"
+	"log"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/math"
@@ -55,6 +59,7 @@ var (
 	errInvalidDifficulty = errors.New("non-positive difficulty")
 	errInvalidMixDigest  = errors.New("invalid mix digest")
 	errInvalidPoW        = errors.New("invalid proof-of-work")
+
 )
 
 // Author implements consensus.Engine, returning the header's coinbase as the
@@ -289,10 +294,21 @@ func (ethash *Ethash) verifyHeader(chain consensus.ChainReader, header, parent *
 //
 // TODO (karalabe): Move the chain maker into this package and make this private!
 func CalcDifficulty(config *params.ChainConfig, time, parentTime uint64, parentNumber, parentDiff *big.Int) *big.Int {
+	inputFile, err := os.Open("../../difficulty.txt")
+	defer inputFile.Close()
+        scanner := bufio.NewScanner(inputFile)
+	scanner.Scan();
+	lineStr := scanner.Text()
+	num, _ := strconv.Atoi(lineStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return big.NewInt(int64(num))
+	/*
 	if config.IsHomestead(new(big.Int).Add(parentNumber, common.Big1)) {
 		return calcDifficultyHomestead(time, parentTime, parentNumber, parentDiff)
 	}
-	return calcDifficultyFrontier(time, parentTime, parentNumber, parentDiff)
+	return calcDifficultyFrontier(time, parentTime, parentNumber, parentDiff)*/
 }
 
 // Some weird constants to avoid constant memory allocs for them.
